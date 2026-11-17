@@ -1,8 +1,8 @@
-import { budgets, serviceIds, type ServiceId } from "./site";
+import { budgets, proposalServices, serviceIds, type ServiceId } from "./site";
 
 export type FieldErrors = Partial<
   Record<
-    "name" | "email" | "company" | "website" | "budget" | "message" | "services",
+    "name" | "email" | "phone" | "company" | "website" | "budget" | "message" | "services" | "service",
     string
   >
 >;
@@ -11,11 +11,13 @@ export type InquiryInput = {
   source?: unknown;
   name?: unknown;
   email?: unknown;
+  phone?: unknown;
   company?: unknown;
   website?: unknown;
   budget?: unknown;
   message?: unknown;
   services?: unknown;
+  service?: unknown;
   company_url_check?: unknown;
 };
 
@@ -43,19 +45,22 @@ export function validateInquiry(input: InquiryInput): {
   errors: FieldErrors;
   honeypot: boolean;
   value: {
-    source: "project" | "final";
+    source: "project" | "final" | "proposal";
     name: string;
     email: string;
+    phone: string;
     company: string;
     website: string;
     budget: string;
     message: string;
     services: ServiceId[];
+    service: string;
   } | null;
 } {
   const errors: FieldErrors = {};
   const honeypot = cleanText(input.company_url_check, 200).length > 0;
-  const source = input.source === "final" ? "final" : input.source === "project" ? "project" : "";
+  const source =
+    input.source === "final" ? "final" : input.source === "project" ? "project" : input.source === "proposal" ? "proposal" : "";
   const name = cleanText(input.name, 80);
   const email = cleanText(input.email, 120);
   const company = cleanText(input.company, 120);
@@ -63,10 +68,22 @@ export function validateInquiry(input: InquiryInput): {
   const budget = cleanText(input.budget, 40);
   const message = cleanText(input.message, 2000);
   const services = parseServices(input.services);
+  const serviceId = cleanText(input.service, 40);
+  const proposal = proposalServices.find((item) => item.id === serviceId);
+  let phoneDigits = cleanText(input.phone, 20).replace(/\D/g, "");
+  if (phoneDigits.startsWith("971")) phoneDigits = phoneDigits.slice(3);
+  if (phoneDigits.startsWith("0")) phoneDigits = phoneDigits.slice(1);
+  phoneDigits = phoneDigits.slice(0, 9);
 
   if (!source) errors.message = "This form could not be submitted.";
   if (name.length < 2) errors.name = "Enter your full name.";
   if (!emailPattern.test(email)) errors.email = "Enter a valid email address.";
+  if (source === "proposal" && phoneDigits.length < 8) {
+    errors.phone = "Enter a valid UAE phone number.";
+  }
+  if (source === "proposal" && !proposal) {
+    errors.service = "Choose a service.";
+  }
   if (source === "project" && company.length < 2) {
     errors.company = "Enter your company or brand name.";
   }
@@ -94,11 +111,13 @@ export function validateInquiry(input: InquiryInput): {
       source,
       name,
       email,
+      phone: source === "proposal" ? `+971${phoneDigits}` : "",
       company,
       website,
       budget,
       message,
       services,
+      service: proposal?.title ?? "",
     },
   };
 }

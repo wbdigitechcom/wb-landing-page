@@ -1,46 +1,34 @@
-import { REVIEW_COUNT_LABEL, REVIEW_SOURCE, ctaLabel } from "@/data/site";
-import { HeroFrame } from "./hero-frame";
-import { Stars } from "./stars";
-import { Reveal } from "./ui/reveal";
+import { partners } from "@/data/partners";
+import { ProposalForm } from "./proposal-form";
 
 export function Hero() {
   return (
-    <section id="home" className="scroll-mt-24">
-      <div className="mx-auto grid w-full max-w-6xl items-start gap-8 px-5 pt-4 pb-12 lg:grid-cols-2 lg:gap-10 lg:pt-6 lg:pb-16">
-        <Reveal>
-          <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-primary uppercase">
-            Creative Digital Growth Agency
-          </p>
-          <h1 className="mt-3 max-w-xl font-display text-[2.75rem] leading-[1.02] font-normal text-foreground sm:text-6xl lg:text-[4.25rem]">
-            Building brands.
-            <span className="mt-1 block text-primary italic">Driving growth.</span>
+    <section id="home" className="scroll-mt-24 bg-[#f3f6fb]">
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 pt-6 pb-14 lg:grid-cols-2 lg:gap-12 lg:pt-10 lg:pb-20">
+        <div>
+          <h1 className="max-w-xl text-[2.15rem] leading-[1.12] font-bold text-[#184a86] sm:text-5xl">
+            Leading Digital Marketing Agency in Dubai & UAE
           </h1>
-          <p className="mt-5 max-w-md text-base leading-7 text-muted">
-            We help businesses grow through branding, marketing, and digital experiences.
-            Sign of Experience.
+          <p className="mt-5 max-w-xl text-[15px] leading-7 text-[#5d6c7b]">
+            WB-DIGITECH is a top digital marketing agency in Dubai and across the UAE delivering SEO, website
+            development, social media marketing, and lead generation that drives measurable growth for startups and
+            established brands.
           </p>
-          <div className="mt-6 flex flex-col gap-1 min-[420px]:flex-row min-[420px]:items-center min-[420px]:gap-5">
-            <a
-              href="#enquiry"
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary-600"
-            >
-              {ctaLabel}
-            </a>
-            <a
-              href="#work"
-              className="inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
-            >
-              See our work
-            </a>
-          </div>
-          <a href="#reviews" className="mt-4 inline-flex min-h-11 items-center gap-3">
-            <Stars className="h-4 w-4" />
-            <span className="text-sm font-semibold">{REVIEW_COUNT_LABEL}</span>
-            <span className="text-sm text-muted">{REVIEW_SOURCE}</span>
-          </a>
-        </Reveal>
-
-        <HeroFrame />
+          <ul className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
+            {partners.map((partner) => (
+              <li key={partner.name}>
+                <img
+                  src={partner.logo}
+                  alt={partner.alt}
+                  width={120}
+                  height={36}
+                  className="h-8 w-auto object-contain sm:h-9"
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+        <ProposalForm anchor="enquiry" />
       </div>
     </section>
   );

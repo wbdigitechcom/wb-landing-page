@@ -4,7 +4,6 @@ import { EnquiryForm } from "@/components/enquiry-form";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { Hero } from "@/components/hero";
-import { Partners } from "@/components/partners";
 import { Reels } from "@/components/reels";
 import { Testimonials } from "@/components/testimonials";
 
@@ -14,7 +13,6 @@ export default function Home() {
       <Header />
       <main className="min-w-0">
         <Hero />
-        <Partners />
         <EnquiryForm variant="project" />
         <Testimonials />
         <Clients />

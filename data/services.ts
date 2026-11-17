@@ -61,6 +61,25 @@ export type Service = (typeof services)[number];
 export type ServiceId = Service["id"];
 export const serviceIds = services.map((service) => service.id);
 
+/** Options on the proposal form. Labels follow wbdigitech.ae. */
+export const proposalServices = [
+  { id: "consultation", title: "Digital Marketing Consultation" },
+  { id: "web-development", title: "Website Development" },
+  { id: "seo", title: "SEO / ASO" },
+  { id: "lead-generation", title: "Lead Generation" },
+  { id: "mobile-app", title: "Mobile App Development" },
+  { id: "social-media", title: "Social Media Marketing" },
+  { id: "crm", title: "CRM Development" },
+  { id: "google-ppc", title: "Google Ads" },
+  { id: "videography", title: "Videography" },
+  { id: "brand-management", title: "Brand Management" },
+  { id: "content", title: "Content Creation" },
+  { id: "graphic-design", title: "Graphic Design & Creative" },
+  { id: "ecommerce", title: "E-commerce Solutions" },
+] as const;
+
+export type ProposalServiceId = (typeof proposalServices)[number]["id"];
+
 export const budgets = [
   "Not sure yet",
   "Under AED 5,000",

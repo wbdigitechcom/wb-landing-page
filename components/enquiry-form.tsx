@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { budgets, services, type ServiceId } from "@/data/services";
-import { contact, ctaLabel } from "@/data/site";
+import { services, type ServiceId } from "@/data/services";
+import { contact } from "@/data/site";
+import { ProposalForm } from "./proposal-form";
 import { validateInquiry, type FieldErrors, type InquiryInput } from "@/lib/inquiry";
 import { INQUIRY_SENT_EVENT, markInquirySent, readInquirySent } from "@/lib/inquiry-sent";
 import { Button } from "./ui/button";
@@ -11,9 +12,6 @@ import { Section } from "./ui/section";
 import { SectionHeading } from "./section-heading";
 import { ServiceCard } from "./service-card";
 
-const fieldClass =
-  "mt-2 min-h-11 w-full rounded-lg border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted/80 focus:border-primary";
-
 type Variant = "project" | "final";
 
 export function EnquiryForm({ variant = "project" }: { variant?: Variant }) {
@@ -21,9 +19,7 @@ export function EnquiryForm({ variant = "project" }: { variant?: Variant }) {
   const [selected, setSelected] = useState<ServiceId[]>([]);
   const [draft, setDraft] = useState<ServiceId[]>([]);
   const [open, setOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [touched, setTouched] = useState<FieldErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [formError, setFormError] = useState("");
@@ -35,6 +31,13 @@ export function EnquiryForm({ variant = "project" }: { variant?: Variant }) {
     window.addEventListener(INQUIRY_SENT_EVENT, onSent);
     return () => window.removeEventListener(INQUIRY_SENT_EVENT, onSent);
   }, [variant]);
+
+  useEffect(() => {
+    if (variant !== "project") return;
+    const id = selected[selected.length - 1];
+    if (!id) return;
+    window.dispatchEvent(new CustomEvent("wb-proposal-service", { detail: id }));
+  }, [selected, variant]);
 
   useEffect(() => {
     if (variant !== "project") return;
@@ -75,24 +78,6 @@ export function EnquiryForm({ variant = "project" }: { variant?: Variant }) {
     };
   }
 
-  function applyErrors(next: FieldErrors, fields?: Array<keyof FieldErrors>) {
-    setErrors((current) => {
-      if (!fields) return next;
-      const merged = { ...current };
-      for (const field of fields) {
-        if (next[field]) merged[field] = next[field];
-        else delete merged[field];
-      }
-      return merged;
-    });
-  }
-
-  function onBlur(form: HTMLFormElement, field: keyof FieldErrors) {
-    setTouched((current) => ({ ...current, [field]: "1" }));
-    const { errors: next } = validateInquiry(readInput(form));
-    applyErrors(next, [field]);
-  }
-
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -100,9 +85,6 @@ export function EnquiryForm({ variant = "project" }: { variant?: Variant }) {
     const { errors: nextErrors, honeypot } = validateInquiry(input);
     setSubmitted(true);
     setErrors(nextErrors);
-    if (nextErrors.company || nextErrors.website || nextErrors.budget || nextErrors.message) {
-      setDetailsOpen(true);
-    }
     if (honeypot) {
       setStatus("sent");
       markInquirySent();
@@ -141,7 +123,6 @@ export function EnquiryForm({ variant = "project" }: { variant?: Variant }) {
         setErrors(data.errors ?? {});
         setFormError(data.message || "Check the highlighted fields.");
         setStatus("error");
-        if (data.errors?.company || data.errors?.message) setDetailsOpen(true);
         return;
       }
       markInquirySent();
@@ -156,33 +137,30 @@ export function EnquiryForm({ variant = "project" }: { variant?: Variant }) {
   const countLabel =
     selected.length === 1 ? "1 service selected" : `${selected.length} services selected`;
   const showServicesError = variant === "project" && (submitted || open) && Boolean(errors.services);
-  const light = variant === "final";
-
-  function visibleError(field: keyof FieldErrors) {
-    return submitted || touched[field] ? errors[field] : undefined;
+  if (variant === "final") {
+    return (
+      <Section id="contact" className="bg-[#f3f6fb] py-16 md:py-24">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-8 px-5 lg:grid-cols-2 lg:gap-12">
+          <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] bg-primary-950 lg:aspect-auto lg:min-h-[28rem]" aria-hidden="true">
+            <img src="/media/main.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
+          </div>
+          <ProposalForm />
+        </div>
+      </Section>
+    );
   }
 
   return (
     <Section
       id={variant === "project" ? "services" : "contact"}
-      className={light ? "bg-foreground py-16 text-white md:py-24" : "bg-surface py-12 md:py-24"}
+      className="bg-surface py-12 md:py-24"
     >
-      <div className={light ? "mx-auto grid w-full max-w-6xl items-stretch gap-5 px-5 lg:grid-cols-2 lg:gap-8" : "mx-auto w-full max-w-6xl px-5"}>
-        {light ? (
-          <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] bg-primary-950 lg:aspect-auto lg:min-h-full" aria-hidden="true">
-            <img src="/media/main.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
-          </div>
-        ) : null}
-
-        <div className={light ? "rounded-[2rem] border border-border bg-white p-5 text-foreground sm:p-8" : ""}>
+      <div className="mx-auto w-full max-w-6xl px-5">
+        <div>
         <SectionHeading
-          eyebrow={variant === "project" ? "New enquiry" : "Still deciding"}
-          title={ctaLabel}
-          text={
-            variant === "project"
-              ? "Choose the services you need, then tell us how to reach you."
-              : "Send a short note if you would rather start here."
-          }
+          eyebrow="Services"
+          title="Digital marketing services in Dubai & UAE"
+          text="Pick a service. It is added to the proposal form above."
         />
 
         {status === "sent" ? (
@@ -198,12 +176,12 @@ export function EnquiryForm({ variant = "project" }: { variant?: Variant }) {
             </p>
           </div>
         ) : (
-          <form id={variant === "project" ? "enquiry" : undefined} onSubmit={onSubmit} noValidate className="mt-6">
+          <form onSubmit={onSubmit} noValidate className="mt-6">
             <input type="text" name="company_url_check" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
 
             {variant === "project" ? (
               <div>
-                <p className="text-sm font-semibold">1. Choose services</p>
+                <p className="text-sm font-semibold">Choose services</p>
                 <div
                   className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4"
                   role="group"
@@ -255,129 +233,6 @@ export function EnquiryForm({ variant = "project" }: { variant?: Variant }) {
                 </Button>
               </div>
             ) : null}
-
-            <div className={variant === "project" ? "mt-8 grid items-stretch gap-5 lg:grid-cols-2 lg:gap-8" : ""}>
-            {variant === "project" ? (
-              <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] bg-primary-950 lg:aspect-auto lg:min-h-full" aria-hidden="true">
-                <img src="/media/web.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
-              </div>
-            ) : null}
-            <div className={variant === "project" ? "rounded-[2rem] border border-border bg-white p-5 sm:p-8" : ""}>
-            <p className="text-sm font-semibold">
-              {variant === "project" ? "2. Tell us about your project" : "Your details"}
-            </p>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <Field
-                id={`${formId}-name`}
-                name="name"
-                label="Full name"
-                autoComplete="name"
-                error={visibleError("name")}
-                onBlur={onBlur}
-              />
-              <Field
-                id={`${formId}-email`}
-                name="email"
-                type="email"
-                label="Work email"
-                autoComplete="email"
-                error={visibleError("email")}
-                onBlur={onBlur}
-              />
-              {variant === "project" ? (
-                <div className={`${detailsOpen ? "contents" : "hidden lg:contents"}`}>
-                  <Field
-                    id={`${formId}-company`}
-                    name="company"
-                    label="Company / brand name"
-                    autoComplete="organization"
-                    error={visibleError("company")}
-                    onBlur={onBlur}
-                  />
-                  <Field
-                    id={`${formId}-website`}
-                    name="website"
-                    label="Website URL"
-                    hint="optional"
-                    autoComplete="url"
-                    error={visibleError("website")}
-                    required={false}
-                    onBlur={onBlur}
-                  />
-                  <label className="block text-sm font-medium" htmlFor={`${formId}-budget`}>
-                    Project budget <span className="font-normal text-muted">(optional)</span>
-                    <select
-                      id={`${formId}-budget`}
-                      name="budget"
-                      defaultValue=""
-                      aria-invalid={Boolean(visibleError("budget"))}
-                      aria-describedby={visibleError("budget") ? `${formId}-budget-error` : undefined}
-                      className={fieldClass}
-                      onBlur={(event) => onBlur(event.currentTarget.form!, "budget")}
-                    >
-                      <option value="">Select a range</option>
-                      {budgets.map((budget) => (
-                        <option key={budget} value={budget}>
-                          {budget}
-                        </option>
-                      ))}
-                    </select>
-                    <FieldError id={`${formId}-budget-error`}>{visibleError("budget")}</FieldError>
-                  </label>
-                  <Field
-                    id={`${formId}-message`}
-                    name="message"
-                    label="Project details"
-                    multiline
-                    className="md:col-span-2"
-                    error={visibleError("message")}
-                    onBlur={onBlur}
-                  />
-                </div>
-              ) : (
-                <Field
-                  id={`${formId}-message`}
-                  name="message"
-                  label="Message"
-                  multiline
-                  className="md:col-span-2"
-                  error={visibleError("message")}
-                  onBlur={onBlur}
-                />
-              )}
-            </div>
-
-            {variant === "project" && !detailsOpen ? (
-              <Button type="button" variant="secondary" className="mt-4 lg:hidden" onClick={() => setDetailsOpen(true)}>
-                Add company and message
-              </Button>
-            ) : null}
-
-            {formError ? (
-              <p className="mt-4 text-sm text-red-700" role="alert">
-                {formError}
-              </p>
-            ) : null}
-
-            <div aria-live="polite" className="sr-only">
-              {status === "sending" ? "Sending your enquiry." : ""}
-              {status === "error" ? formError : ""}
-            </div>
-
-            <Button type="submit" disabled={status === "sending"} className="mt-5">
-              {status === "sending" ? "Sending…" : ctaLabel}
-            </Button>
-
-            {variant === "final" ? (
-              <p className="mt-4 text-sm text-muted">
-                or email{" "}
-                <a className="underline-offset-4 hover:underline" href={`mailto:${contact.email}`}>
-                  {contact.email}
-                </a>
-              </p>
-            ) : null}
-            </div>
-            </div>
           </form>
         )}
         </div>
@@ -417,61 +272,5 @@ export function EnquiryForm({ variant = "project" }: { variant?: Variant }) {
         </div>
       </Modal>
     </Section>
-  );
-}
-
-function Field({
-  id,
-  name,
-  label,
-  hint,
-  type = "text",
-  autoComplete,
-  multiline = false,
-  className = "",
-  required = true,
-  error,
-  onBlur,
-}: {
-  id: string;
-  name: keyof FieldErrors;
-  label: string;
-  hint?: string;
-  type?: string;
-  autoComplete?: string;
-  multiline?: boolean;
-  className?: string;
-  required?: boolean;
-  error?: string;
-  onBlur: (form: HTMLFormElement, field: keyof FieldErrors) => void;
-}) {
-  const errorId = `${id}-error`;
-  const shared = {
-    id,
-    name,
-    autoComplete,
-    required,
-    "aria-invalid": Boolean(error) || undefined,
-    "aria-describedby": error ? errorId : undefined,
-    className: fieldClass,
-    onBlur: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      if (event.currentTarget.form) onBlur(event.currentTarget.form, name);
-    },
-  };
-  return (
-    <label className={`block text-sm font-medium ${className}`} htmlFor={id}>
-      {label} {hint ? <span className="font-normal text-muted">({hint})</span> : null}
-      {multiline ? <textarea {...shared} rows={4} /> : <input {...shared} type={type} />}
-      <FieldError id={errorId}>{error}</FieldError>
-    </label>
-  );
-}
-
-function FieldError({ id, children }: { id: string; children?: string }) {
-  if (!children) return null;
-  return (
-    <span id={id} className="mt-1.5 block text-xs font-normal text-red-700" role="alert">
-      {children}
-    </span>
   );
 }
