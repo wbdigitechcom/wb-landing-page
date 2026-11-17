@@ -79,7 +79,7 @@ export function validateInquiry(input: InquiryInput): {
   if (message.length < 12) {
     errors.message = "Tell us a little more about the project.";
   }
-  if (services.length === 0) {
+  if (source === "project" && services.length === 0) {
     errors.services = "Select at least one service.";
   }
 

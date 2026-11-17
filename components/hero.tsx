@@ -1,52 +1,46 @@
+import { REVIEW_COUNT_LABEL, REVIEW_SOURCE, ctaLabel } from "@/data/site";
+import { HeroFrame } from "./hero-frame";
+import { Stars } from "./stars";
+import { Reveal } from "./ui/reveal";
+
 export function Hero() {
   return (
-    <section id="home" className="scroll-mt-20">
-      <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-5 pt-12 pb-16 md:pt-20 lg:grid-cols-[1.2fr_0.8fr] lg:pt-24 lg:pb-28">
-        <div className="rise">
+    <section id="home" className="scroll-mt-24">
+      <div className="mx-auto grid w-full max-w-6xl items-start gap-8 px-5 pt-4 pb-12 lg:grid-cols-2 lg:gap-10 lg:pt-6 lg:pb-16">
+        <Reveal>
           <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-primary uppercase">
             Creative Digital Growth Agency
           </p>
-          <h1 className="mt-5 max-w-4xl text-[clamp(2.7rem,8vw,5.4rem)] leading-[0.96] font-semibold tracking-[-0.05em] text-foreground">
-            Building Brands.
-            <span className="mt-1 block text-primary">Creating Digital</span>
-            <span className="block">Experiences.</span>
-            <span className="block">Driving Growth.</span>
+          <h1 className="mt-3 max-w-xl font-display text-[2.75rem] leading-[1.02] font-normal text-foreground sm:text-6xl lg:text-[4.25rem]">
+            Building brands.
+            <span className="mt-1 block text-primary italic">Driving growth.</span>
           </h1>
-          <p className="mt-6 max-w-md text-base leading-7 text-muted md:text-lg">
-            We help ambitious businesses grow through strategic branding, powerful
-            marketing, and high-performing digital experiences.
+          <p className="mt-5 max-w-md text-base leading-7 text-muted">
+            We help businesses grow through branding, marketing, and digital experiences.
+            Sign of Experience.
           </p>
-          <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row">
+          <div className="mt-6 flex flex-col gap-1 min-[420px]:flex-row min-[420px]:items-center min-[420px]:gap-5">
             <a
-              href="#services"
-              className="inline-flex items-center justify-center rounded-xl bg-foreground px-5 py-3.5 text-sm font-medium text-white transition-colors hover:bg-primary"
+              href="#enquiry"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary-600"
             >
-              Let&apos;s Work Together
+              {ctaLabel}
             </a>
             <a
-              href="#services"
-              className="inline-flex items-center justify-center rounded-xl px-5 py-3.5 text-sm font-medium text-foreground underline-offset-4 hover:underline"
+              href="#work"
+              className="inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
             >
-              Explore Our Services
+              See our work
             </a>
           </div>
-        </div>
+          <a href="#reviews" className="mt-4 inline-flex min-h-11 items-center gap-3">
+            <Stars className="h-4 w-4" />
+            <span className="text-sm font-semibold">{REVIEW_COUNT_LABEL}</span>
+            <span className="text-sm text-muted">{REVIEW_SOURCE}</span>
+          </a>
+        </Reveal>
 
-        <div
-          className="relative aspect-[4/5] overflow-hidden rounded-[2rem] bg-primary-950 text-white"
-          aria-hidden="true"
-        >
-          <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-primary" />
-          <div className="absolute top-1/3 -left-10 h-40 w-40 rounded-full border border-white/30" />
-          <div className="absolute right-8 bottom-24 h-px w-2/3 bg-white/40" />
-          <p className="absolute top-8 left-8 text-[0.7rem] tracking-[0.28em] uppercase">
-            Dubai
-          </p>
-          <p className="absolute right-6 bottom-8 left-8 text-3xl leading-none font-semibold tracking-[-0.04em] sm:text-4xl">
-            Sign of
-            <span className="block">Experience.</span>
-          </p>
-        </div>
+        <HeroFrame />
       </div>
     </section>
   );
